@@ -4,7 +4,7 @@ RUN apt-get update -yq \
     && apt-get install -yq \
        ros-melodic-desktop-full \
        sudo
- 
+
 # Make Xwindows work with the native x server and qt
 ENV DISPLAY=:0
 ENV QT_X11_NO_MITSHM=1
@@ -17,12 +17,15 @@ ARG UNAME=robot
 ARG UID=1000
 ARG GID=1000
 
-# switch to a normal user called "$USER"
+# create a normal user called "$USER"
 RUN groupadd -g $GID $UNAME
 RUN useradd -m -u $UID -g $GID -s /bin/bash $UNAME
 
+# make the /usr/local directory owned by the user
+RUN chmod -R $UNAME:$UNAME /usr/local
+
 # let the user run apt-get and apt using sudo
-RUN chmod u+w /etc/sudoers && echo "$UNAME /usr/bin/apt-get" >> /etc/sudoers && echo "$UNAME /usr/bin/apt" >> /etc/sudoers" && chmod u-w /etc/soders
+RUN chmod u+w /etc/sudoers && echo "$UNAME /usr/bin/apt-get" >> /etc/sudoers && echo "$UNAME /usr/bin/apt" >> /etc/sudoers && chmod u-w /etc/soders
 
 # change to the desired user
 USER $UNAME

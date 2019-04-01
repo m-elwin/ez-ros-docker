@@ -16,25 +16,11 @@ mypath=$(readlink -f $(dirname $0))
 
 usage="Usage
 
-dockerbld cmd
+usedocker build dockerfile
+          Build a docker image based on the given dockerfile.  Any dockerfile specified will derive from ros-melodic-desktop-full.docker
+          and will not have root access.  You can use sudo apt-get commands in the dockerfile and you have write access to /usr/local
+usedocker
 
-   Runs a command in the docker build image.
-   If the Dockerfile image has not been built, it builds it.
-   The docker image is called $image and the container is called $container
-
-   Note to recognize new usb devices, you must restart the container using the start 
-   and stop command
-   
-   cmd - any command to run in the docker image.  There are also some special command
-
-   Special commands:
-   build: build the docker image and exit
-   start: start the docker container and exit
-   stop:  stop the docker container and exit
-
-   Environment Variables:
-   image - the name of the docker image: default - boeing:dev
-   container - the name of the container: default - boeing
 "
 
 # build the docker image
