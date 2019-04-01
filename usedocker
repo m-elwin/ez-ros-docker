@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+# Used for mannaging the docker image of the development environment more conveniently
+# To see how to use this file, call it with no arguments
+
+# the name of the docker image
+if [ -z $image ]; then
+    image="melodic:dev"
+fi
+
+if [ -z $container ]; then
+    container="melodic"
+fi
+
+# get the full path to this script
+mypath=$(readlink -f $(dirname $0))
+
+usage="Usage
+
+dockerbld cmd
+
+   Runs a command in the docker build image.
+   If the Dockerfile image has not been built, it builds it.
+   The docker image is called $image and the container is called $container
+
+   Note to recognize new usb devices, you must restart the container using the start 
+   and stop command
+   
+   cmd - any command to run in the docker image.  There are also some special command
+
+   Special commands:
+   build: build the docker image and exit
+   start: start the docker container and exit
+   stop:  stop the docker container and exit
+
+   Environment Variables:
+   image - the name of the docker image: default - boeing:dev
+   container - the name of the container: default - boeing
+"
+
+# build the docker image
+function docker_build_image {
+        sudo docker build --build-arg UID=$(id -u) --build-arg GID=$(id -g) --build-arg UNAME=$USER --tag "$image" .
+    if [ $? -ne 0 ]; then
+        echo "Failed to create docker image $image."
+        exit 1
+    fi
+}
+
+# start the docker container
+function docker_container_start {
+    # run docker, giving it access to the specified devices and X windows
+    # the cap-add and security-opt lets me use gdb to debug ros nodes
+    xhost +local:root
+    sudo docker run -itd --rm --name "$container" \
+         -v "$mypath/home:/home/$USER" \
+         -v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 \
+         -v /etc/machine-id:/etc/machine-id \
+         -v /var/run/dbus:/var/run/dbus \
+         --device /dev/dri \
+         --cap-add=SYS_PTRACE \
+         --security-opt seccomp=unconfined \
+         --privileged \
+         -v /dev/:/dev \
+         "$image"
+
+    if [ $? -ne 0 ]; then
+        echo "Failed to start docker container $container."
+        exit 1
+    fi
+}
+case $1 in
+    build)
+        docker_build_image
+        exit 0
+        ;;
+    start)
+        docker_container_start
+        exit 0
+        ;;
+    stop)
+        sudo docker stop "$container"
+        exit $?
+        ;;
+    "")
+        printf "$usage"
+        exit 0
+        ;;
+    *)
+        # check if the docker image has been created and if not create one
+        if [ -z "$(sudo docker images -q $image)" ]; then
+            docker_build_image
+        fi
+        # check if the docker image is running and if not start it
+        if [ -z "$(sudo docker ps -q -f NAME=$container)" ]; then
+            docker_container_start
+        fi
+
+        # issue a command in the container
+        sudo docker exec -ti "$container" $@
+        ;;
+esac
+          
+
+
+
