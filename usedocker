@@ -11,7 +11,7 @@ if [ -z $container ]; then
     container="melodic"
 fi
 
-homedir=$3
+homedir=$2
 
 usage=\
 "Usage: usedocker build
@@ -42,7 +42,7 @@ function docker_container_start {
     if [ -z $homedir ]; then
         mountline=""
     else
-        mountline="-v $homdir:/home/$USER"
+        mountline="-v $homedir:/home/$USER"
     fi
 
     # run docker, giving it access to the specified devices and X windows

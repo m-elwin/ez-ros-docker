@@ -27,3 +27,4 @@ RUN chmod u+w /etc/sudoers && echo "$UNAME /usr/bin/apt-get" >> /etc/sudoers && 
 
 # change to the desired user
 USER $UNAME
+WORKDIR /home/$UNAME
