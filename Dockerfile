@@ -21,9 +21,6 @@ ARG GID=1000
 RUN groupadd -g $GID $UNAME
 RUN useradd -m -u $UID -g $GID -s /bin/bash $UNAME
 
-# make the /usr/local directory owned by the user
-RUN chmod -R $UNAME:$UNAME /usr/local
-
 # let the user run apt-get and apt using sudo
 RUN chmod u+w /etc/sudoers && echo "$UNAME /usr/bin/apt-get" >> /etc/sudoers && echo "$UNAME /usr/bin/apt" >> /etc/sudoers && chmod u-w /etc/soders
 
