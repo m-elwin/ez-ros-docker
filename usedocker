@@ -16,10 +16,16 @@ mypath=$(readlink -f $(dirname $0))
 
 usage="Usage
 
-usedocker build dockerfile
-          Build a docker image based on the given dockerfile.  Any dockerfile specified will derive from ros-melodic-desktop-full.docker
-          and will not have root access.  You can use sudo apt-get commands in the dockerfile and you have write access to /usr/local
-usedocker
+usedocker build dockerfile: Build a docker image based on the given dockerfile.  
+                            Any dockerfile specified will derive from ros-melodic-desktop-full.docker
+                            and will not have root access.  You can use sudo apt commands in the 
+                            container.
+
+usedocker start: Start the docker container but don't run any commands
+
+usedocker stop: Stop the docker container
+
+usedocker <cmd>: Run cmd in the container. For example, usedocker bash starts an interactive bash shell
 
 "
 
