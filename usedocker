@@ -24,7 +24,10 @@ usage=\
     1. build: build the docker container
     2. start: start the docker container, optionally mounting homedir as your home directory
     3. stop:  stop the docker container
-    4. <cmd>: run <cmd> in the container. Use bash or zsh to start an interactive shell.
+    4. <cmd>: run the command specified by <cmd> in the container.
+       For example, bash or zsh (which will be launched interactively).
+       If the container has not been built in will be built.
+       If the container has not been started it will be started with a default home directory of ~/melodic.
 "
 
 
@@ -83,6 +86,17 @@ case $1 in
         exit 0
         ;;
     *)
+        # check if the docker image has been created and if not create one
+        if [ -z "$(sudo docker images -q $image)" ]; then
+            docker_build_image
+        fi
+        # check if the docker image is running and if not start it
+        if [ -z "$(sudo docker ps -q -f NAME=$container)" ]; then
+            if [ -z $homedir ]; then
+                homedir=~/melodic
+            fi
+            docker_container_start
+        fi
         # issue a command in the container
         sudo docker exec -ti "$container" $@
         ;;
