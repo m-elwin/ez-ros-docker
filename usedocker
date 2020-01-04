@@ -48,6 +48,7 @@ function docker_container_start {
     # still work
     xhost +local:root
     sudo docker run -itd --rm --name "$container" \
+         --hostname "$(hostname)-docker" \
          -v $homedir:/home/$USER \
          -v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 \
          -v /etc/machine-id:/etc/machine-id \
