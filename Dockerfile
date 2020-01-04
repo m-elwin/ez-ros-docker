@@ -3,6 +3,7 @@ FROM ros:melodic
 RUN apt-get update -yq \
     && apt-get install -yq \
        ros-melodic-desktop-full \
+       zsh \
        sudo
 
 # Make Xwindows work with the native x server and qt

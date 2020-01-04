@@ -14,19 +14,16 @@ fi
 # get the full path to this script
 mypath=$(readlink -f $(dirname $0))
 
-usage="Usage
+usage=\
+"Usage: usedocker build 
+    or: usedocker start
+    or: usedocker stop
+    or: usedocker <cmd>
 
-usedocker build dockerfile: Build a docker image based on the given dockerfile.  
-                            Any dockerfile specified will derive from ros-melodic-desktop-full.docker
-                            and will not have root access.  You can use sudo apt commands in the 
-                            container.
-
-usedocker start: Start the docker container but don't run any commands
-
-usedocker stop: Stop the docker container
-
-usedocker <cmd>: Run cmd in the container. For example, usedocker bash starts an interactive bash shell
-
+    1. build: build the docker container 
+    2. start: start the docker container
+    3. stop:  stop the docker container
+    4. <cmd>: run <cmd> in the container. Use bash or zsh to start an interactive shell
 "
 
 # build the docker image
