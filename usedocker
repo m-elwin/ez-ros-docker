@@ -42,17 +42,13 @@ function docker_build_image {
 
 # start the docker container
 function docker_container_start {
-    if [ -z $homedir ]; then
-        mountline=""
-    else
-        mountline="-v $homedir:/home/$USER"
-    fi
-
     # run docker, giving it access to the specified devices and X windows
     # the cap-add and security-opt lets me use gdb to debug ros nodes
+    # if $homedir does not exist, nothing will be mounted but the command will
+    # still work
     xhost +local:root
     sudo docker run -itd --rm --name "$container" \
-         $mountline \
+         -v $homedir:/home/$USER \
          -v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 \
          -v /etc/machine-id:/etc/machine-id \
          -v /var/run/dbus:/var/run/dbus \
@@ -94,6 +90,18 @@ case $1 in
         if [ -z "$(sudo docker ps -q -f NAME=$container)" ]; then
             if [ -z $homedir ]; then
                 homedir=~/melodic
+            fi
+            if [ ! -d $homedir ]; then
+                echo "The directory $homedir, to be mounted in the container at /home/$USER, does not exist."
+                read -r -p "Would you like to create it [y/N]? (Otherwise /home/$USER will be in the container only) " response
+                case "$response" in
+                    [yY])
+                        mkdir -p $homedir
+                    ;;
+                    *)
+                        # docker creates non-existant directories automatically, so set this to empty to prevent that
+                        homedir=""
+                esac
             fi
             docker_container_start
         fi
