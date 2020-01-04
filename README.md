@@ -1,4 +1,4 @@
-# EZ ROS Docker Container
+# Easy ROS Docker Container
 Used by me to do ROS development on ArchLinux with minimal differences between
 that experience and running ROS natively on Ubuntu. 
 
