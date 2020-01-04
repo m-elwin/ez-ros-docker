@@ -11,20 +11,22 @@ if [ -z $container ]; then
     container="melodic"
 fi
 
-# get the full path to this script
-mypath=$(readlink -f $(dirname $0))
+homedir=$3
 
 usage=\
-"Usage: usedocker build 
-    or: usedocker start
+"Usage: usedocker build
+    or: usedocker start [homedir]
     or: usedocker stop
     or: usedocker <cmd>
 
-    1. build: build the docker container 
-    2. start: start the docker container
+    Start a ROS docker container designed for interactive use.
+
+    1. build: build the docker container
+    2. start: start the docker container, optionally mounting homedir as your home directory
     3. stop:  stop the docker container
-    4. <cmd>: run <cmd> in the container. Use bash or zsh to start an interactive shell
+    4. <cmd>: run <cmd> in the container. Use bash or zsh to start an interactive shell.
 "
+
 
 # build the docker image
 function docker_build_image {
@@ -37,11 +39,17 @@ function docker_build_image {
 
 # start the docker container
 function docker_container_start {
+    if [ -z $homedir ]; then
+        mountline=""
+    else
+        mountline="-v $homdir:/home/$USER"
+    fi
+
     # run docker, giving it access to the specified devices and X windows
     # the cap-add and security-opt lets me use gdb to debug ros nodes
     xhost +local:root
     sudo docker run -itd --rm --name "$container" \
-         -v "$mypath/home:/home/$USER" \
+         $mountline \
          -v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 \
          -v /etc/machine-id:/etc/machine-id \
          -v /var/run/dbus:/var/run/dbus \
@@ -75,20 +83,7 @@ case $1 in
         exit 0
         ;;
     *)
-        # check if the docker image has been created and if not create one
-        if [ -z "$(sudo docker images -q $image)" ]; then
-            docker_build_image
-        fi
-        # check if the docker image is running and if not start it
-        if [ -z "$(sudo docker ps -q -f NAME=$container)" ]; then
-            docker_container_start
-        fi
-
         # issue a command in the container
         sudo docker exec -ti "$container" $@
         ;;
 esac
-          
-
-
-
