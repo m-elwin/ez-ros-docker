@@ -23,7 +23,7 @@ RUN groupadd -g $GID $UNAME
 RUN useradd -m -u $UID -g $GID -s /bin/bash $UNAME
 
 # let the user run apt-get and apt using sudo
-RUN chmod u+w /etc/sudoers && echo "$UNAME /usr/bin/apt-get" >> /etc/sudoers && echo "$UNAME /usr/bin/apt" >> /etc/sudoers && chmod u-w /etc/soders
+RUN chmod u+w /etc/sudoers && echo "$UNAME /usr/bin/apt-get" >> /etc/sudoers && echo "$UNAME /usr/bin/apt" >> /etc/sudoers && chmod u-w /etc/sudoers
 
 # change to the desired user
 USER $UNAME
