@@ -3,6 +3,8 @@ FROM ros:melodic
 RUN apt-get update -yq \
     && apt-get install -yq \
        ros-melodic-desktop-full \
+       ssh \
+       ros-melodic-turtlebot3 \
        zsh \
        python-catkin-lint \
        sudo

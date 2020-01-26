@@ -48,7 +48,7 @@ function docker_container_start {
     # still work
     xhost +local:root
     sudo docker run -itd --rm --name "$container" \
-         --hostname "$(hostname)-docker" \
+         --hostname "$(hostname)" \
          -v $homedir:/home/$USER \
          -v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 \
          -v /etc/machine-id:/etc/machine-id \
@@ -57,6 +57,7 @@ function docker_container_start {
          --cap-add=SYS_PTRACE \
          --security-opt seccomp=unconfined \
          --privileged \
+         --network=host \
          -v /dev/:/dev \
          -v $XDG_RUNTIME_DIR:$XDG_RUNTIME_DIR \
          -e XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR \
