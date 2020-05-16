@@ -1,0 +1,35 @@
+* Easy ROS Docker Container
+Used by me to do ROS development on ArchLinux with minimal differences between
+that experience and running ROS natively on Ubuntu. 
+
+The goal is to make running programs in the docker container as similar to running code
+on a native Ubuntu 18.04 LTS installation on your real hardware as possible.
+
+* Basic usage
+=./usedocker bash= (to launch bash in the container)
+
+=./usedocker zsh= (to launch zsh in the container)
+
+See =./usedocker= to print usage information.
+
+On first run the commands above will build the container, start it, and prompt you to create a default
+home directory on the host. You may wish to copy some configuration files (such as `.bashrc` or `.zshrc`) from your home directory
+to the docker container (especially so you can source `/opt/ros/melodic/setup.{zsh|bash}`).
+
+* Features
+0. Simple script to launch the container and run commands in it
+1. Runs as your user id inside the container
+3. Enables =sudo apt= to install packages as needed on a temporary basis
+   - Edit the docker file to add more packages
+4. Mounts a specified local directory as your home directory in the container
+   - Put your ROS workspace in this home directory then use your native tools to manipulate the files
+5. Enables launching of X Windows from within the container
+6. The docker container is run in privileged mode and accesses all the host devices
+   - This lets you experiment with, for example, plugging/unplugging USB serial devices
+   - You are not root in the container, which (hopefully) limits the damage you can do to the host system
+     while being in a privileged container
+7. Uses host networking to enable transparent network access for ROS nodes. Effectively
+   - Allows you to run =rosmaster= within the docker container and have remote nodes find the master
+     using your host's networking setup
+
+
