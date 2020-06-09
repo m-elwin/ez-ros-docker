@@ -9,13 +9,13 @@ usage=\
     You work as your current user, all devices are available, and ports running in the container are shared with the host.
     
     1. from <image>               : build a docker container starting with the provided image (e.g ubuntu:focal)
-    2. start <image> [homedir]    : start the docker container, optionally mounting homedir as your home directory
+    2. start <image> [homedir]    : start the docker container, mounting homedir as your home directory (this defaults to /home/user/image)
     3. stop <image>               : stop the docker container
     4. run <image> <cmd>          : run the command specified by <cmd> in the container corresponding to <image>.
        For example, bash or zsh (which will be launched interactively).
        If the container has not been built in will be built.
        If the container has not been started it will be started with a default home directory of ~/dockerhome if it exists.
-       The container follows the naming pattern $image:dock, but can be directly specified by setting the container environment variable:
+       The container follows the naming pattern $image_dock, but can be directly specified by setting the container environment variable:
        container=containername dockint start image
 "
 
@@ -33,7 +33,7 @@ cmd=$3
 
 if [[ -z $container ]]
 then
-    container=$image:dock
+    container=$image_dock
 fi
 
 # build the docker image
@@ -94,11 +94,11 @@ case $1 in
         # check if the docker image is running and if not start it
         if [ -z "$($DOCKER ps -q -f NAME=$container)" ]; then
             if [ -z $homedir ]; then
-                homedir=~/melodic
+                homedir=~/$image
             fi
             if [ ! -d $homedir ]; then
                 echo "The directory $homedir, to be mounted in the container at /home/$USER, does not exist."
-                read -r -p "Would you like to create it [y/N]? (Otherwise /home/$USER will be in the container only) " response
+                read -r -p "Would you like to create it [y/N]? (Otherwise /home/$USER will be mounted in the container) " response
                 case "$response" in
                     [yY])
                         mkdir -p $homedir
@@ -113,7 +113,7 @@ case $1 in
         # issue a command in the container
         $DOCKER exec -ti "$container" $@
         ;;
-    "")
+    *)
         printf "$usage"
         exit 0
         ;;
