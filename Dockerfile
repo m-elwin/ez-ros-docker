@@ -14,8 +14,8 @@ ARG UID=1000
 ARG GID=1000
 
 # create a normal user called "$USER"
-RUN groupadd -g -f $GID $UNAME
-RUN useradd -m -u $UID -g $GID -s /bin/bash $UNAME
+RUN groupadd -f -g $GID $UNAME
+RUN id -u $UNAME || useradd -m -u $UID -g $GID -s /bin/bash $UNAME
 
 # change to the desired user
 USER $UNAME
