@@ -1,35 +1,28 @@
-* Easy ROS Docker Container
-Used by me to do ROS development on ArchLinux with minimal differences between
-that experience and running ROS natively on Ubuntu. 
+* Docker Interactive
+Used to make existing docker containers more suitable for interactive used.
+The goal is to make running programs in the docker container be as close to the host user experience as possible:
+this means operating with the same user and group ids as the host user, seeing all devices on the host machine,
+and being accessible via the host's network settings.
 
-The goal is to make running programs in the docker container as similar to running code
-on a native Ubuntu 18.04 LTS installation on your real hardware as possible.
+Initially, this was used by me to do ROS development on non-Ubuntu machines with minimal differences between
+that experience and running ROS natively on Ubuntu. A shared directory allows editing of all files using host tools.
 
-* Basic usage
-=./usedocker bash= (to launch bash in the container)
 
-=./usedocker zsh= (to launch zsh in the container)
-
-See =./usedocker= to print usage information.
-
-On first run the commands above will build the container, start it, and prompt you to create a default
-home directory on the host. You may wish to copy some configuration files (such as `.bashrc` or `.zshrc`) from your home directory
-to the docker container (especially so you can source `/opt/ros/melodic/setup.{zsh|bash}`).
-
+* Example Usage
+1. ~./dockint ros:noetic bash~
+   - This will build ~ros:noetic~ container from dockerhub, prompt you to create a home directory on the host (default to image name =~/ros:noetic=), and launch bash.
+   - The contents of ~/ros:noetic~ are mounted to the home directory in the container.
+2. Run =./dockint= with no arguments to print usage information. 
+3
 * Features
-0. Simple script to launch the container and run commands in it
-1. Runs as your user id inside the container
-3. Enables =sudo apt= to install packages as needed on a temporary basis
-   - Edit the docker file to add more packages
-4. Mounts a specified local directory as your home directory in the container
-   - Put your ROS workspace in this home directory then use your native tools to manipulate the files
-5. Enables launching of X Windows from within the container
-6. The docker container is run in privileged mode and accesses all the host devices
+1. Simple script to build the image, launch the container, and run commands in it
+2. Runs as your user id inside the container
+3. Enables launching of X Windows from within the container
+4. The docker container is run in privileged mode and accesses all the host devices
    - This lets you experiment with, for example, plugging/unplugging USB serial devices
-   - You are not root in the container, which (hopefully) limits the damage you can do to the host system
-     while being in a privileged container
-7. Uses host networking to enable transparent network access for ROS nodes. Effectively
+   - You are not root in the container.
+5. Use host networking to enable transparent network access.
    - Allows you to run =rosmaster= within the docker container and have remote nodes find the master
-     using your host's networking setup
+     using your host's networking setup.
 
 
