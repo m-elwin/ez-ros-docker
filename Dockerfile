@@ -1,13 +1,5 @@
-FROM ros:melodic
-
-RUN apt-get update -yq \
-    && apt-get install -yq \
-       ros-melodic-desktop-full \
-       ssh \
-       ros-melodic-turtlebot3 \
-       zsh \
-       python-catkin-lint \
-       sudo
+ARG BASE=ubuntu:focal
+FROM $BASE
 
 # Make Xwindows work with the native x server and qt
 ENV DISPLAY=:0
@@ -24,12 +16,6 @@ ARG GID=1000
 # create a normal user called "$USER"
 RUN groupadd -g $GID $UNAME
 RUN useradd -m -u $UID -g $GID -s /bin/bash $UNAME
-
-# let the user run apt-get and apt using sudo
-RUN chmod u+w /etc/sudoers && \
-    echo "$UNAME ALL=(ALL) NOPASSWD: /usr/bin/apt-get" >> /etc/sudoers && \
-    echo "$UNAME ALL=(ALL) NOPASSWD: /usr/bin/apt" >> /etc/sudoers && \
-    chmod u-w /etc/sudoers
 
 # change to the desired user
 USER $UNAME

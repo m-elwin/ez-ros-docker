@@ -1,39 +1,44 @@
 #!/usr/bin/env bash
-# Used for mannaging the docker image of the development environment more conveniently
-# To see how to use this file, call it with no arguments
-
-# the name of the docker image
-if [ -z $image ]; then
-    image="melodic:dev"
-fi
-
-if [ -z $container ]; then
-    container="melodic"
-fi
-
-homedir=$2
-
 usage=\
-"Usage: usedocker build
-    or: usedocker start [homedir]
-    or: usedocker stop
-    or: usedocker <cmd>
+"Usage: dockint from <image>
+    or: dockint start <image> [homedir]
+    or: dockint stop <image>
+    or: dockint run <image> <cmd>
 
-    Start a ROS docker container designed for interactive use.
-
-    1. build: build the docker container
-    2. start: start the docker container, optionally mounting homedir as your home directory
-    3. stop:  stop the docker container
-    4. <cmd>: run the command specified by <cmd> in the container.
+    Work interactively with a docker container as if it's environment were on the host system.
+    You work as your current user, all devices are available, and ports running in the container are shared with the host.
+    
+    1. from <image>               : build a docker container starting with the provided image (e.g ubuntu:focal)
+    2. start <image> [homedir]    : start the docker container, optionally mounting homedir as your home directory
+    3. stop <image>               : stop the docker container
+    4. run <image> <cmd>          : run the command specified by <cmd> in the container corresponding to <image>.
        For example, bash or zsh (which will be launched interactively).
        If the container has not been built in will be built.
-       If the container has not been started it will be started with a default home directory of ~/melodic.
+       If the container has not been started it will be started with a default home directory of ~/dockerhome if it exists.
+       The container follows the naming pattern $image:dock, but can be directly specified by setting the container environment variable:
+       container=containername dockint start image
 "
 
+# determine if we need to use sudo when calling docker
+if groups $USER | grep -q docker;
+then
+    DOCKER=docker
+else
+    DOCKER="sudo docker"
+fi    
+
+# set the container name
+image=$2
+cmd=$3
+
+if [[ -z $container ]]
+then
+    container=$image:dock
+fi
 
 # build the docker image
 function docker_build_image {
-        sudo docker build --build-arg UID=$(id -u) --build-arg GID=$(id -g) --build-arg UNAME=$USER --tag "$image" .
+        $DOCKER build --build-arg UID=$(id -u) --build-arg GID=$(id -g) --build-arg UNAME=$USER --build-arg BASE=$image --tag "$image" .
     if [ $? -ne 0 ]; then
         echo "Failed to create docker image $image."
         exit 1
@@ -47,7 +52,7 @@ function docker_container_start {
     # if $homedir does not exist, nothing will be mounted but the command will
     # still work
     xhost +local:root
-    sudo docker run -itd --rm --name "$container" \
+    $DOCKER run -itd --rm --name "$container" \
          --hostname "$HOST" \
          -v $homedir:/home/$USER \
          -v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 \
@@ -69,7 +74,7 @@ function docker_container_start {
     fi
 }
 case $1 in
-    build)
+    from)
         docker_build_image
         exit 0
         ;;
@@ -78,20 +83,16 @@ case $1 in
         exit 0
         ;;
     stop)
-        sudo docker stop "$container"
+        $DOCKER stop "$container"
         exit $?
         ;;
-    "")
-        printf "$usage"
-        exit 0
-        ;;
-    *)
+    run)
         # check if the docker image has been created and if not create one
-        if [ -z "$(sudo docker images -q $image)" ]; then
+        if [ -z "$($DOCKER images -q $image)" ]; then
             docker_build_image
         fi
         # check if the docker image is running and if not start it
-        if [ -z "$(sudo docker ps -q -f NAME=$container)" ]; then
+        if [ -z "$($DOCKER ps -q -f NAME=$container)" ]; then
             if [ -z $homedir ]; then
                 homedir=~/melodic
             fi
@@ -110,6 +111,10 @@ case $1 in
             docker_container_start
         fi
         # issue a command in the container
-        sudo docker exec -ti "$container" $@
+        $DOCKER exec -ti "$container" $@
+        ;;
+    "")
+        printf "$usage"
+        exit 0
         ;;
 esac
