@@ -29,6 +29,13 @@ fi
 
 # set the container name
 image=$2
+
+if [ -z "$image" ]
+then
+    printf "$usage"
+    exit 1
+fi
+
 cmd=$3
 
 if [[ -z $container ]]
@@ -73,13 +80,42 @@ function docker_container_start {
         exit 1
     fi
 }
+
+
+function interactive_start {
+    # check if the docker image has been created and if not create one
+    if [ -z "$($DOCKER images -q $image)" ]; then
+        docker_build_image
+    fi
+
+    # check if the docker image is running and if not start it
+    if [ -z "$($DOCKER ps -q -f NAME=$container)" ]; then
+        if [ -z $homedir ]; then
+            homedir=~/$image
+        fi
+        if [ ! -d $homedir ]; then
+            echo "The directory $homedir, to be mounted in the container at /home/$USER, does not exist."
+            read -r -p "Would you like to create it [y/N]? (Otherwise /home/$USER will be mounted in the container) " response
+            case "$response" in
+                [yY])
+                    mkdir -p $homedir
+                    ;;
+                *)
+                    # docker creates non-existant directories automatically, so set this to empty to prevent that
+                    homedir=""
+            esac
+        fi
+        docker_container_start
+    fi
+}
+
 case $1 in
     from)
         docker_build_image
         exit 0
         ;;
     start)
-        docker_container_start
+        interactive_start
         exit 0
         ;;
     stop)
@@ -87,30 +123,8 @@ case $1 in
         exit $?
         ;;
     run)
-        # check if the docker image has been created and if not create one
-        if [ -z "$($DOCKER images -q $image)" ]; then
-            docker_build_image
-        fi
-        # check if the docker image is running and if not start it
-        if [ -z "$($DOCKER ps -q -f NAME=$container)" ]; then
-            if [ -z $homedir ]; then
-                homedir=~/$image
-            fi
-            if [ ! -d $homedir ]; then
-                echo "The directory $homedir, to be mounted in the container at /home/$USER, does not exist."
-                read -r -p "Would you like to create it [y/N]? (Otherwise /home/$USER will be mounted in the container) " response
-                case "$response" in
-                    [yY])
-                        mkdir -p $homedir
-                    ;;
-                    *)
-                        # docker creates non-existant directories automatically, so set this to empty to prevent that
-                        homedir=""
-                esac
-            fi
-            docker_container_start
-        fi
         # issue a command in the container
+        interactive_start
         $DOCKER exec -ti "$container" $@
         ;;
     *)
