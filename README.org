@@ -1,5 +1,5 @@
 * Docker Interactive
-Used to make existing docker containers more suitable for interactive used.
+Used to make existing docker containers more suitable for interactive use.
 The goal is to make running programs in the docker container be as close to the host user experience as possible:
 this means operating with the same user and group ids as the host user, seeing all devices on the host machine,
 and being accessible via the host's network settings.
@@ -9,7 +9,7 @@ that experience and running ROS natively on Ubuntu. A shared directory allows ed
 
 
 * Example Usage
-1. ~./dockint ros:noetic bash~
+1. ~./dockint from ros:noetic bash~
    - This will build ~ros:noetic~ container from dockerhub, prompt you to create a home directory on the host (default to image name =~/ros:noetic=), and launch bash.
    - The contents of ~/ros:noetic~ are mounted to the home directory in the container.
 2. Run =./dockint= with no arguments to print usage information. 
