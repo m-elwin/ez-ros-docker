@@ -40,7 +40,7 @@ cmd=$3
 
 if [[ -z $container ]]
 then
-    container=$image_dock
+    container="${image}_dockint"
 fi
 
 # build the docker image
@@ -125,6 +125,7 @@ case $1 in
     run)
         # issue a command in the container
         interactive_start
+        shift 2
         $DOCKER exec -ti "$container" $@
         ;;
     *)
