@@ -1,22 +1,25 @@
 #!/usr/bin/env bash
 usage=\
-"Usage: dockint from <image>
-    or: dockint start <image> [homedir]
-    or: dockint stop <image>
-    or: dockint run <image> <cmd>
+"Usage: dockint from <base_image>  [PATH/URL]
+    or: dockint start <base_image> [homedir]
+    or: dockint stop <base_image>
+    or: dockint run <base_image> <cmd>
 
     Work interactively with a docker container as if it's environment were on the host system.
     You work as your current user, all devices are available, and ports running in the container are shared with the host.
     
-    1. from <image>               : build a docker container starting with the provided image (e.g ubuntu:focal)
-    2. start <image> [homedir]    : start the docker container, mounting homedir as your home directory (this defaults to /home/user/image)
-    3. stop <image>               : stop the docker container
-    4. run <image> <cmd>          : run the command specified by <cmd> in the container corresponding to <image>.
+    1. from <base_image>  [PATH/URL] : build a docker container starting with the provided image (e.g ubuntu:focal)
+                                         If PATH/URL is specified, base_image will be built from the provided Dockerfile and context.
+    2. start <base_image> [homedir]    : start the docker container, mounting homedir as your home directory (this defaults to /home/user/image)
+    3. stop <base_image>               : stop the docker container
+    4. run <base_image> <cmd>          : run the command specified by <cmd> in the container corresponding to <image>.
        For example, bash or zsh (which will be launched interactively).
        If the container has not been built in will be built.
        If the container has not been started it will be started with a default home directory of ~/dockerhome if it exists.
-       The container follows the naming pattern $image_dock, but can be directly specified by setting the container environment variable:
-       container=containername dockint start image
+       The container follows the naming pattern ${base_image}_dockint, but can be directly specified by setting the container environment variable:
+       container=containername dockint start base_image
+
+    The image that is used is called ${base_image}_img but can be overrident by setting the image environment variable
 "
 
 dockerfile=\
@@ -52,25 +55,38 @@ else
     DOCKER="sudo docker"
 fi    
 
-# set the container name
-image=$2
+# set the base image name
+base_image=$2
 
-if [ -z "$image" ]
+if [ -z "$base_image" ]
 then
     printf "$usage"
     exit 1
 fi
 
+if [ -z $image ]
+then
+    image="${base_image}_img"
+fi
+    
 cmd=$3
 
-if [[ -z $container ]]
+# name of dockerfile to build(where applicable)
+dfile=$3
+
+if [ -z $container ]
 then
-    container="${image}_dockint"
+    container="${base_image}_dockint"
 fi
 
 # build the docker image
 function docker_build_image {
-        printf "$dockerfile" | $DOCKER build --build-arg UID=$(id -u) --build-arg GID=$(id -g) --build-arg UNAME=$USER --build-arg BASE=$image --tag "$image" - 
+    if [ ! -z $dfile ]
+    then
+        $DOCKER build --tag $base_image $dfile
+    fi
+    
+    printf "$dockerfile" | $DOCKER build --build-arg UID=$(id -u) --build-arg GID=$(id -g) --build-arg UNAME=$USER --build-arg BASE=$base_image --tag "$image" - 
     if [ $? -ne 0 ]; then
         echo "Failed to create docker image $image."
         exit 1
@@ -109,14 +125,14 @@ function docker_container_start {
 
 function interactive_start {
     # check if the docker image has been created and if not create one
-    if [ -z "$($DOCKER images -q $image)" ]; then
+    if [ -z "$($DOCKER images -q $base_image)" ]; then
         docker_build_image
     fi
 
     # check if the docker image is running and if not start it
     if [ -z "$($DOCKER ps -q -f NAME=$container)" ]; then
         if [ -z $homedir ]; then
-            homedir=~/$image
+            homedir=~/$base_image
         fi
         if [ ! -d $homedir ]; then
             echo "The directory $homedir, to be mounted in the container at /home/$USER, does not exist."
