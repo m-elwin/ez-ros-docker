@@ -9,10 +9,18 @@ that experience and running ROS natively on Ubuntu. A shared directory allows ed
 
 
 * Example Usage
-1. ~./dockint from ros:noetic bash~
+1. Example workflow [Added by Rico]
+ - go to your Dockerfile direcotory, run your Dockerfile to download all dependencies ```$docker build tag IMAGE_TAG PATH_TO_DOCKER_FILE```
+ - go to dockint directory
+ - build your image using `dockint from`: ```./dockint from IMAGE_TAG```
+ - build your interactive container and create a new bash session, using `dockint run IMAGE_TAG bash` 
+ - optional: If you'd like to open a new terminal session for the same container, simply do `dockint run IMAGE_TAG bash` 
+ - Now you can start working in the bash container, whose home directory is /home/user_name/IMAGE_TAG on the local machine.  
+ 
+2. ~./dockint from ros:noetic bash~
    - This will build ~ros:noetic~ container from dockerhub, prompt you to create a home directory on the host (default to image name =~/ros:noetic=), and launch bash.
    - The contents of ~/ros:noetic~ are mounted to the home directory in the container.
-2. Run =./dockint= with no arguments to print usage information. 
+3. Run =./dockint= with no arguments to print usage information. 
 
 * Features
 1. Simple script to build the image, launch the container, and run commands in it

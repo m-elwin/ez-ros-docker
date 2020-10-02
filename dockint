@@ -20,6 +20,7 @@ usage=\
        container=containername dockint start base_image
 
     The image that is used is called ${base_image}_img but can be overrident by setting the image environment variable
+    Rico: there doesnt' seem to have a way to set [homedir] from command-line, unless we set it to a custom path?  
 "
 
 dockerfile=\
