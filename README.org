@@ -21,6 +21,7 @@ that experience and running ROS natively on Ubuntu. A shared directory allows ed
 4. The docker container is run in privileged mode and accesses all the host devices
    - This lets you experiment with, for example, plugging/unplugging USB serial devices
    - You are not root in the container.
+   - However, users with access to the docker daemon can of course run the container as root if they want to.
 5. Use host networking to enable transparent network access.
    - Allows you to run =rosmaster= within the docker container and have remote nodes find the master
      using your host's networking setup.

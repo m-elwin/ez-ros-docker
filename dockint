@@ -156,6 +156,7 @@ case $1 in
         exit 0
         ;;
     start)
+        homedir=$3    
         interactive_start
         exit 0
         ;;
